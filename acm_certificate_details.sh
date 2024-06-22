@@ -26,10 +26,10 @@ app="$2"
 environment="$3"
 
 # Validate if region is provided
-if [ -z "$region" ]; then
-    echo "Region argument is missing or empty."
-    exit 1
-fi
+#if [ -z "$region" ]; then
+#    echo "Region argument is missing or empty."
+#    exit 1
+#fi
 
 # AWS CLI command to list ACM certificates based on tags
 certificate_list=$(aws acm list-certificates --query 'CertificateSummaryList[].CertificateArn' --output text)
