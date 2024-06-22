@@ -3,6 +3,8 @@
 aws --version
 
 # Function to print usage information
+#!/bin/bash
+
 function usage {
   echo "Usage: $0 -r REGION -t TAG -f FILE"
   echo "  -r REGION  (required) The AWS region where your certificates are located"
@@ -36,7 +38,7 @@ if [[ ! -z "$TAG_KEY" ]]; then
 fi
 
 # Get certificate list (text format for easier parsing)
-CERTIFICATES=$(aws $COMMAND --output text | cut -f2)
+CERTIFICATES=$(aws $COMMAND --output text | awk '/  arn:/ {print $NF}')
 
 # Check if there are any certificates
 if [[ -z "$CERTIFICATES" ]]; then
