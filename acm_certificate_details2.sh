@@ -37,9 +37,7 @@ environment="$3"
 #  | awk '{print $1, $4, $5}' \
 #  | column -t
 
-for c in $(aws acm list-certificates --query 'CertificateSummaryList[].CertificateArn' --output text)
-    do aws acm describe-certificate --certificate-arn $c --query 'Certificate.[CertificateArn,DomainName,Status,NotAfter]'
-    done
+aws acm $region list-certificates --query CertificateSummaryList[].[CertificateArn,DomainName] --output text
 
 echo "Listed all your AWS ACM certificates."
 
