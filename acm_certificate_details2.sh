@@ -37,7 +37,7 @@ environment="$3"
 #  | awk '{print $1, $4, $5}' \
 #  | column -t
 
-aws acm list-certificates --output text | awk '{print $1}' | tr '\t' ' '
+aws acm list-certificates --region $region --query 'CertificateSummaryList[].{Arn: CertificateArn, DomainName}' --output text
 
 echo "Listed all your AWS ACM certificates."
 
