@@ -32,7 +32,8 @@ environment="$3"
 #fi
 
 # AWS CLI command to list ACM certificates based on tags
-certificate_arns=$(aws acm list-certificates --query 'CertificateSummaryList[].CertificateArn' --region $region --output text)
+#certificate_arns=$(aws acm list-certificates --query 'CertificateSummaryList[].CertificateArn' --region $region --output text)
+aws acm list-certificates --region $region --output text
 
 
 echo "$certificate_arns"
