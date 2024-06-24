@@ -22,8 +22,8 @@
 # Usage: acm_certificate_details.sh <region> <app> <environment>
 
 region="$1"
-app="$2"
-environment="$3"
+APP="$2"
+ENVIRONMENT="$3"
 
 # Validate if region is provided
 #if [ -z "$region" ]; then
@@ -37,7 +37,9 @@ environment="$3"
 #  | awk '{print $1, $4, $5}' \
 #  | column -t
 
-aws acm list-certificates --region $region --query CertificateSummaryList[].[CertificateArn,DomainName] --output text
+#aws acm list-certificates --region $region --query CertificateSummaryList[].[CertificateArn,DomainName] --output text
+
+aws acm list-certificates --region $region --query "CertificateSummaryList[?Tags[?Key=='Owner'&&Value=='$APP'&&Key=='Environment'&&Value=='$ENVIRONMENT'&&Key=='Name'&&Value=='cloudvista']].CertificateArn" --output text
 
 echo "Listed all your AWS ACM certificates."
 
