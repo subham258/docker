@@ -39,8 +39,15 @@ ENVIRONMENT="$3"
 
 #aws acm list-certificates --region $region --query CertificateSummaryList[].[CertificateArn,DomainName] --output text
 
-aws acm list-certificates --region $region --query "CertificateSummaryList[?Tags[?Key=='Owner'&&Value=='$APP'&&Key=='Environment'&&Value=='$ENVIRONMENT'&&Key=='Name'&&Value=='cloudvista']].CertificateArn" --output text
-
+aws acm list-certificates --region $region --query 'CertificateSummaryList[].CertificateArn' --output text
+while IFS= read -r arn; do
+  # Check if the certificate has a specific tag key and value (replace 'your-tag-key' and 'your-tag-value' accordingly)
+  aws acm list-tags-for-certificate --certificate-arn "$arn" | grep --quiet 'ENVIRONMENT": "$ENVIRONMENT"'
+  if [ $? -eq 0 ]; then
+    # If the tag matches, describe the certificate to get details (optional)
+    aws acm describe-certificate --certificate-arn "$arn"
+  fi
+done < <(aws acm list-certificates --query 'CertificateSummaryList[].CertificateArn' --output text)
 echo "Listed all your AWS ACM certificates."
 
 exit 0
