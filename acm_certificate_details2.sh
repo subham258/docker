@@ -1,56 +1,29 @@
 #! /bin/bash
+set -e
 
-#!/bin/bash
+ACM_REGION=$1
+APP=$2
+ENVIRONMENT=$3
 
-# Set AWS region
-#region="ap-south-1"  # Replace with your desired region
+set -x
 
-# Set variables for filtering ACM certificates
-#app="infra"  # Replace with the tag value you want to filter by
-#environment="DEV"  # Replace with the tag value you want to filter by
+# List all certificate ARNs
+aws acm list-certificates --region ACM_REGION --query 'CertificateSummaryList[].CertificateArn' --output text | while IFS= read -r arn; do
+  # Trim any leading or trailing whitespace from the ARN
+  arn=$(echo "$arn" | tr -d '\r' | xargs)
+  
+  # Output the ARN for debugging
+  echo "Processing ARN: '$arn'"
 
-# AWS CLI command to list ACM certificates based on tags
-#certificate_list=$(aws acm list-certificates --region $region --query "CertificateSummaryList[?Tags[?Key=='Owner'&&Value=='$app'&&Key=='Environment'&&Value=='$environment']].CertificateArn" --output text)
+  # Fetch tags for each certificate
+  tags=$(aws acm list-tags-for-certificate --certificate-arn "$arn")
 
-#echo "ACM Certificates for App: $app, Environment: $environment"
-#echo "$certificate_list"
-
-
-
-#!/bin/bash
-
-# Usage: acm_certificate_details.sh <region> <app> <environment>
-
-region="$1"
-APP="$2"
-ENVIRONMENT="$3"
-
-# Validate if region is provided
-#if [ -z "$region" ]; then
-#    echo "Region argument is missing or empty."
-#    exit 1
-#fi
-
-# AWS CLI command to list ACM certificates based on tags
-#certificate_arns=$(aws acm list-certificates --query 'CertificateSummaryList[].CertificateArn' --region $region --output text)
-#aws acm list-certificates --output text \
-#  | awk '{print $1, $4, $5}' \
-#  | column -t
-
-#aws acm list-certificates --region $region --query CertificateSummaryList[].[CertificateArn,DomainName] --output text
-
-aws acm list-certificates --region $region --query 'CertificateSummaryList[].CertificateArn' --output text
-while IFS= read -r arn; do
-  # Check if the certificate has a specific tag key and value (replace 'your-tag-key' and 'your-tag-value' accordingly)
-  aws acm list-tags-for-certificate --certificate-arn "$arn" | grep --quiet 'ENVIRONMENT": "$ENVIRONMENT"'
-  if [ $? -eq 0 ]; then
-    # If the tag matches, describe the certificate to get details (optional)
-    aws acm describe-certificate --certificate-arn "$arn"
+  # Check if the certificate has the specific tags 'ENVIRONMENT': 'DEV' and 'Owner': 'infra'
+  if echo "$tags" | grep --quiet '"Key": "ENVIRONMENT"' && echo "$tags" | grep --quiet '"Value": "ENVIRONMENT"' && echo "$tags" | grep --quiet '"Key": "Owner"' && echo "$tags" | grep --quiet '"Value": "APP"'; then
+    # If the tags match, describe the certificate to get details
+    aws acm describe-certificate --certificate-arn "$arn" --query 'Certificate.{CertificateArn:CertificateArn,DomainName:DomainName,Subject:Subject,Issuer:Issuer,CreatedAt:CreatedAt,Status:Status}' --output json
   fi
-done < <(aws acm list-certificates --query 'CertificateSummaryList[].CertificateArn' --output text)
-echo "Listed all your AWS ACM certificates."
-
-exit 0
+done
 
 
 
