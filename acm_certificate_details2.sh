@@ -8,4 +8,9 @@ ENVIRONMENT=$3
 aws acm list-certificates --region $ACM_REGION --query 'CertificateSummaryList[].{Arn:CertificateArn, DomainName:DomainName, SubjectAlternativeNames:SubjectAlternativeNames[].Name, Status:Status}' --output text
 
 
+while IFS= read -r certificate; do
+        echo "$certificate"
+done <<< "$certificate_LIST"
+
+
 
